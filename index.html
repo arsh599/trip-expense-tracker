@@ -278,7 +278,7 @@
                 <input type="text" id="contributorName" placeholder="e.g., John" maxlength="30">
             </div>
             <div class="input-group">
-                <label for="contributorAmount">Amount</label>
+                <label for="contributorAmount">Amount (₹)</label>
                 <input type="number" id="contributorAmount" placeholder="0.00" step="0.01" min="0">
             </div>
             <button class="secondary-btn" onclick="addContributor()">Add Contributor</button>
@@ -293,15 +293,15 @@
                 <div class="stats">
                     <div class="stat-box">
                         <div class="stat-label">Budget</div>
-                        <div class="stat-value" id="budgetDisplay">$0</div>
+                        <div class="stat-value" id="budgetDisplay">₹0</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label">Spent</div>
-                        <div class="stat-value" id="spentDisplay">$0</div>
+                        <div class="stat-value" id="spentDisplay">₹0</div>
                     </div>
                     <div class="balance-box">
                         <div class="stat-label">Remaining</div>
-                        <div class="stat-value" id="balanceDisplay">$0</div>
+                        <div class="stat-value" id="balanceDisplay">₹0</div>
                     </div>
                 </div>
             </div>
@@ -316,7 +316,7 @@
                     <input type="text" id="expenseDesc" placeholder="e.g., Lunch, Hotel, Flight" maxlength="50">
                 </div>
                 <div class="input-group">
-                    <label for="expenseAmount">Amount</label>
+                    <label for="expenseAmount">Amount (₹)</label>
                     <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0">
                 </div>
                 <button onclick="addExpense()">Add Expense</button>
@@ -383,7 +383,7 @@
                     <div>
                         <div class="contributor-name">${c.name}</div>
                     </div>
-                    <div class="contributor-amount">$${c.amount.toFixed(2)}</div>
+                    <div class="contributor-amount">₹${c.amount.toFixed(2)}</div>
                     <button class="remove-btn" onclick="removeContributor(${c.id})">Remove</button>
                 </div>
             `).join('');
@@ -444,16 +444,16 @@
             const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
             const remaining = budget - spent;
             
-            document.getElementById('budgetDisplay').textContent = `$${budget.toFixed(2)}`;
-            document.getElementById('spentDisplay').textContent = `$${spent.toFixed(2)}`;
-            document.getElementById('balanceDisplay').textContent = `$${remaining.toFixed(2)}`;
+            document.getElementById('budgetDisplay').textContent = `₹${budget.toFixed(2)}`;
+            document.getElementById('spentDisplay').textContent = `₹${spent.toFixed(2)}`;
+            document.getElementById('balanceDisplay').textContent = `₹${remaining.toFixed(2)}`;
             
             // Update contributors list in tracker
             const trackerList = document.getElementById('trackerContributorsList');
             trackerList.innerHTML = contributors.map(c => `
                 <div class="contributor-item">
                     <div class="contributor-name">${c.name}</div>
-                    <div class="contributor-amount">$${c.amount.toFixed(2)}</div>
+                    <div class="contributor-amount">₹${c.amount.toFixed(2)}</div>
                 </div>
             `).join('');
             
@@ -467,7 +467,7 @@
                         <div class="expense-info">
                             <div class="expense-desc">${e.desc}</div>
                         </div>
-                        <div class="expense-amount">$${e.amount.toFixed(2)}</div>
+                        <div class="expense-amount">₹${e.amount.toFixed(2)}</div>
                         <button class="delete-btn" onclick="deleteExpense(${e.id})">Delete</button>
                     </div>
                 `).join('');
