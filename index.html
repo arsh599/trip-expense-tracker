@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#ffffff">
     <meta name="description" content="Track your trip expenses">
     <link rel="manifest" href="manifest.json">
     <title>Trip Expense Tracker</title>
@@ -14,132 +14,183 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent: #2563eb;
+            --danger: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+            --accent: #3b82f6;
+            --danger: #f87171;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 16px;
-            color: #333;
+            padding: 20px;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 480px;
             margin: 0 auto;
         }
 
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
         }
 
         h1 {
-            text-align: center;
-            color: white;
-            margin-bottom: 24px;
             font-size: 28px;
+            font-weight: 700;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle:active {
+            opacity: 0.7;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
         }
 
         h2 {
-            color: #667eea;
-            font-size: 16px;
-            margin-top: 20px;
-            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-top: 24px;
+            margin-bottom: 16px;
+        }
+
+        h2:first-child {
+            margin-top: 0;
         }
 
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .stat-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
             padding: 16px;
-            border-radius: 12px;
+            border-radius: 10px;
             text-align: center;
         }
 
         .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-bottom: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
         .stat-value {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
         }
 
         .balance-box {
-            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
             grid-column: 1 / -1;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent);
         }
 
         .balance-box .stat-value {
-            font-size: 32px;
+            font-size: 28px;
         }
 
         .input-group {
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            margin-bottom: 6px;
-            color: #555;
+            margin-bottom: 8px;
+            color: var(--text-primary);
         }
 
         input {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 16px;
             font-family: inherit;
-            transition: border-color 0.3s;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
         }
 
         input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent);
         }
 
         button {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: opacity 0.2s;
             margin-top: 8px;
         }
 
         button:active {
-            transform: scale(0.98);
+            opacity: 0.8;
         }
 
         .secondary-btn {
-            background: #667eea;
-            margin-top: 6px;
+            background: var(--bg-primary);
+            color: var(--accent);
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .secondary-btn:active {
+            background: var(--bg-secondary);
         }
 
         .hidden {
@@ -151,41 +202,39 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px;
-            background: #f8f9fa;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             margin-bottom: 8px;
-            border-left: 4px solid #667eea;
         }
 
         .contributor-name {
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
             font-size: 14px;
         }
 
         .contributor-amount {
-            color: #667eea;
-            font-weight: bold;
+            color: var(--accent);
+            font-weight: 600;
             font-size: 14px;
-            margin: 0 12px;
         }
 
         .remove-btn {
-            background: #ff6b6b;
+            background: var(--danger);
             color: white;
             border: none;
             padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+            transition: opacity 0.2s;
         }
 
         .remove-btn:active {
             opacity: 0.8;
-        }
-
-        .expenses-list {
-            margin-top: 16px;
         }
 
         .expense-item {
@@ -193,39 +242,35 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px;
-            background: #f8f9fa;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             margin-bottom: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .expense-info {
-            flex: 1;
         }
 
         .expense-desc {
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
             font-size: 14px;
         }
 
         .expense-amount {
-            color: #667eea;
-            font-weight: bold;
+            color: var(--accent);
+            font-weight: 600;
             font-size: 14px;
-            text-align: right;
-            min-width: 80px;
+            margin: 0 12px;
         }
 
         .delete-btn {
-            background: #ff6b6b;
+            background: var(--danger);
             color: white;
             border: none;
             padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
-            margin-left: 8px;
+            font-weight: 500;
+            transition: opacity 0.2s;
         }
 
         .delete-btn:active {
@@ -234,52 +279,52 @@
 
         .empty-state {
             text-align: center;
-            color: #999;
-            padding: 16px;
+            color: var(--text-secondary);
+            padding: 20px;
             font-size: 14px;
         }
 
         .reset-btn {
-            background: #ff6b6b;
-            margin-top: 16px;
+            background: var(--danger);
+            margin-top: 24px;
         }
 
         @media (max-width: 480px) {
             body {
-                padding: 12px;
+                padding: 16px;
             }
             .card {
                 padding: 16px;
-                margin-bottom: 12px;
             }
             h1 {
                 font-size: 24px;
-                margin-bottom: 16px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>💰 Trip Expenses</h1>
+        <div class="header">
+            <h1>💰 Expenses</h1>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+        </div>
 
         <div id="setupView" class="card">
             <h2>Add Contributors</h2>
-            <p style="color: #666; font-size: 14px; margin-bottom: 16px;">Add who's contributing to the trip budget</p>
             
             <div class="input-group">
                 <label for="contributorName">Name</label>
-                <input type="text" id="contributorName" placeholder="e.g., John" maxlength="30">
+                <input type="text" id="contributorName" placeholder="e.g., John">
             </div>
             <div class="input-group">
                 <label for="contributorAmount">Amount (₹)</label>
                 <input type="number" id="contributorAmount" placeholder="0.00" step="0.01" min="0">
             </div>
-            <button class="secondary-btn" onclick="addContributor()">Add Contributor</button>
+            <button class="secondary-btn" onclick="addContributor()">Add</button>
 
-            <div id="contributorsList" style="margin-top: 20px; min-height: 40px;"></div>
+            <div id="contributorsList" style="margin-top: 20px;"></div>
 
-            <button onclick="startTracking()">Start Tracking Expenses</button>
+            <button onclick="startTracking()">Start Tracking</button>
         </div>
 
         <div id="trackerView" class="hidden">
@@ -293,7 +338,7 @@
                         <div class="stat-label">Spent</div>
                         <div class="stat-value" id="spentDisplay">₹0</div>
                     </div>
-                    <div class="balance-box">
+                    <div class="balance-box stat-box">
                         <div class="stat-label">Remaining</div>
                         <div class="stat-value" id="balanceDisplay">₹0</div>
                     </div>
@@ -302,12 +347,12 @@
 
             <div class="card">
                 <h2>Contributors</h2>
-                <div id="trackerContributorsList" style="margin-bottom: 16px;"></div>
+                <div id="trackerContributorsList"></div>
 
-                <h2>Add Expense</h2>
+                <h2 style="margin-top: 24px;">Add Expense</h2>
                 <div class="input-group">
-                    <label for="expenseDesc">What did you spend on?</label>
-                    <input type="text" id="expenseDesc" placeholder="e.g., Lunch, Hotel, Flight" maxlength="50">
+                    <label for="expenseDesc">Description</label>
+                    <input type="text" id="expenseDesc" placeholder="e.g., Lunch" maxlength="50">
                 </div>
                 <div class="input-group">
                     <label for="expenseAmount">Amount (₹)</label>
@@ -316,16 +361,37 @@
                 <button onclick="addExpense()">Add Expense</button>
 
                 <h2 style="margin-top: 24px;">Expenses</h2>
-                <div class="expenses-list">
-                    <div id="expensesList"></div>
-                </div>
+                <div id="expensesList"></div>
 
-                <button class="reset-btn" onclick="resetTracker()">Reset & Start Over</button>
+                <button class="reset-btn" onclick="resetTracker()">Reset</button>
             </div>
         </div>
     </div>
 
     <script>
+        const THEME_KEY = 'tripTrackerTheme';
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeButton(theme);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem(THEME_KEY, newTheme);
+            updateThemeButton(newTheme);
+        }
+
+        function updateThemeButton(theme) {
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(() => {});
         }
@@ -349,7 +415,7 @@
             if (!list) return;
             
             if (data.contributors.length === 0) {
-                list.innerHTML = '<div class="empty-state">No contributors added yet</div>';
+                list.innerHTML = '<div class="empty-state">No contributors yet</div>';
             } else {
                 let html = '';
                 for (let c of data.contributors) {
@@ -370,7 +436,7 @@
             const amount = parseFloat(document.getElementById('contributorAmount').value);
             
             if (!name || !amount || amount <= 0) {
-                alert('Please fill in all fields');
+                alert('Fill in all fields');
                 return;
             }
             
@@ -393,7 +459,7 @@
         function startTracking() {
             const data = loadData();
             if (data.contributors.length === 0) {
-                alert('Please add at least one contributor');
+                alert('Add at least one contributor');
                 return;
             }
             showTracker();
@@ -410,7 +476,7 @@
             const amount = parseFloat(document.getElementById('expenseAmount').value);
             
             if (!desc || !amount || amount <= 0) {
-                alert('Please fill in all fields');
+                alert('Fill in all fields');
                 return;
             }
             
@@ -449,7 +515,6 @@
             document.getElementById('spentDisplay').textContent = `₹${spent.toFixed(2)}`;
             document.getElementById('balanceDisplay').textContent = `₹${remaining.toFixed(2)}`;
             
-            // Update contributors list in tracker
             const trackerList = document.getElementById('trackerContributorsList');
             let html = '';
             for (let c of contributors) {
@@ -462,18 +527,15 @@
             }
             trackerList.innerHTML = html;
             
-            // Update expenses list
             const list = document.getElementById('expensesList');
             if (expenses.length === 0) {
-                list.innerHTML = '<div class="empty-state">No expenses yet. Add one to get started!</div>';
+                list.innerHTML = '<div class="empty-state">No expenses yet</div>';
             } else {
                 let expHtml = '';
                 for (let e of expenses) {
                     expHtml += `
                         <div class="expense-item">
-                            <div class="expense-info">
-                                <div class="expense-desc">${e.desc}</div>
-                            </div>
+                            <div class="expense-desc">${e.desc}</div>
                             <div class="expense-amount">₹${e.amount.toFixed(2)}</div>
                             <button class="delete-btn" onclick="deleteExpense(${e.id})">Delete</button>
                         </div>
@@ -484,7 +546,7 @@
         }
 
         function resetTracker() {
-            if (confirm('Are you sure? This will clear everything.')) {
+            if (confirm('Clear everything?')) {
                 localStorage.removeItem('tripBudget');
                 document.getElementById('setupView').classList.remove('hidden');
                 document.getElementById('trackerView').classList.add('hidden');
@@ -494,7 +556,7 @@
             }
         }
 
-        // Load on start
+        initTheme();
         displayContributors();
     </script>
 </body>
