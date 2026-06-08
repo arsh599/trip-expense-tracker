@@ -42,6 +42,15 @@
             font-size: 28px;
         }
 
+        h2 {
+            color: #667eea;
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -128,8 +137,50 @@
             transform: scale(0.98);
         }
 
+        .secondary-btn {
+            background: #667eea;
+            margin-top: 6px;
+        }
+
         .hidden {
             display: none;
+        }
+
+        .contributor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .contributor-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .contributor-amount {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .remove-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .remove-btn:active {
+            opacity: 0.8;
         }
 
         .expenses-list {
@@ -219,11 +270,22 @@
         <h1>💰 Trip Expenses</h1>
 
         <div id="setupView" class="card">
+            <h2>Add Contributors</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 16px;">Add who's contributing to the trip budget</p>
+            
             <div class="input-group">
-                <label for="budgetInput">Total Budget</label>
-                <input type="number" id="budgetInput" placeholder="Enter your budget amount" step="0.01" min="0">
+                <label for="contributorName">Name</label>
+                <input type="text" id="contributorName" placeholder="e.g., John" maxlength="30">
             </div>
-            <button onclick="startTracking()">Start Tracking</button>
+            <div class="input-group">
+                <label for="contributorAmount">Amount</label>
+                <input type="number" id="contributorAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <button class="secondary-btn" onclick="addContributor()">Add Contributor</button>
+
+            <div id="contributorsList" style="margin-top: 20px;"></div>
+
+            <button onclick="startTracking()" style="margin-top: 16px;">Start Tracking Expenses</button>
         </div>
 
         <div id="trackerView" class="hidden">
@@ -245,6 +307,10 @@
             </div>
 
             <div class="card">
+                <h2>Contributors</h2>
+                <div id="trackerContributorsList" style="margin-bottom: 16px;"></div>
+
+                <h2>Add Expense</h2>
                 <div class="input-group">
                     <label for="expenseDesc">What did you spend on?</label>
                     <input type="text" id="expenseDesc" placeholder="e.g., Lunch, Hotel, Flight" maxlength="50">
@@ -255,11 +321,12 @@
                 </div>
                 <button onclick="addExpense()">Add Expense</button>
 
+                <h2 style="margin-top: 24px;">Expenses</h2>
                 <div class="expenses-list">
                     <div id="expensesList"></div>
                 </div>
 
-                <button class="reset-btn" onclick="resetTracker()">Reset Budget</button>
+                <button class="reset-btn" onclick="resetTracker()">Reset & Start Over</button>
             </div>
         </div>
     </div>
@@ -270,21 +337,64 @@
         }
 
         function loadData() {
-            return JSON.parse(localStorage.getItem('tripBudget') || '{"budget": null, "expenses": []}');
+            return JSON.parse(localStorage.getItem('tripBudget') || '{"contributors": [], "expenses": []}');
         }
 
         function saveData(data) {
             localStorage.setItem('tripBudget', JSON.stringify(data));
         }
 
-        function startTracking() {
-            const budget = parseFloat(document.getElementById('budgetInput').value);
-            if (!budget || budget <= 0) {
-                alert('Please enter a valid budget');
+        function addContributor() {
+            const name = document.getElementById('contributorName').value.trim();
+            const amount = parseFloat(document.getElementById('contributorAmount').value);
+            
+            if (!name || !amount || amount <= 0) {
+                alert('Please fill in all fields');
                 return;
             }
-            const data = { budget, expenses: [] };
+            
+            const data = loadData();
+            data.contributors.push({ id: Date.now(), name, amount });
             saveData(data);
+            
+            document.getElementById('contributorName').value = '';
+            document.getElementById('contributorAmount').value = '';
+            updateContributorsList();
+        }
+
+        function removeContributor(id) {
+            const data = loadData();
+            data.contributors = data.contributors.filter(c => c.id !== id);
+            saveData(data);
+            updateContributorsList();
+        }
+
+        function updateContributorsList() {
+            const data = loadData();
+            const list = document.getElementById('contributorsList');
+            
+            if (data.contributors.length === 0) {
+                list.innerHTML = '<div class="empty-state">No contributors added yet</div>';
+                return;
+            }
+            
+            list.innerHTML = data.contributors.map(c => `
+                <div class="contributor-item">
+                    <div>
+                        <div class="contributor-name">${c.name}</div>
+                    </div>
+                    <div class="contributor-amount">$${c.amount.toFixed(2)}</div>
+                    <button class="remove-btn" onclick="removeContributor(${c.id})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function startTracking() {
+            const data = loadData();
+            if (data.contributors.length === 0) {
+                alert('Please add at least one contributor');
+                return;
+            }
             showTracker();
         }
 
@@ -321,14 +431,16 @@
 
         function updateDisplay() {
             const data = loadData();
-            const { budget, expenses } = data;
+            const { contributors, expenses } = data;
             
-            if (!budget) {
+            if (contributors.length === 0) {
                 document.getElementById('setupView').classList.remove('hidden');
                 document.getElementById('trackerView').classList.add('hidden');
+                updateContributorsList();
                 return;
             }
             
+            const budget = contributors.reduce((sum, c) => sum + c.amount, 0);
             const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
             const remaining = budget - spent;
             
@@ -336,6 +448,16 @@
             document.getElementById('spentDisplay').textContent = `$${spent.toFixed(2)}`;
             document.getElementById('balanceDisplay').textContent = `$${remaining.toFixed(2)}`;
             
+            // Update contributors list in tracker
+            const trackerList = document.getElementById('trackerContributorsList');
+            trackerList.innerHTML = contributors.map(c => `
+                <div class="contributor-item">
+                    <div class="contributor-name">${c.name}</div>
+                    <div class="contributor-amount">$${c.amount.toFixed(2)}</div>
+                </div>
+            `).join('');
+            
+            // Update expenses list
             const list = document.getElementById('expensesList');
             if (expenses.length === 0) {
                 list.innerHTML = '<div class="empty-state">No expenses yet. Add one to get started!</div>';
@@ -357,7 +479,9 @@
                 localStorage.removeItem('tripBudget');
                 document.getElementById('setupView').classList.remove('hidden');
                 document.getElementById('trackerView').classList.add('hidden');
-                document.getElementById('budgetInput').value = '';
+                document.getElementById('contributorName').value = '';
+                document.getElementById('contributorAmount').value = '';
+                updateContributorsList();
             }
         }
 
