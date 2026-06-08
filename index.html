@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="Track your trip expenses">
+    <link rel="manifest" href="manifest.json">
+    <title>Trip Expense Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 24px;
+            font-size: 28px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .balance-box {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        .balance-box .stat-value {
+            font-size: 32px;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 8px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .expenses-list {
+            margin-top: 16px;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .expense-info {
+            flex: 1;
+        }
+
+        .expense-desc {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .expense-amount {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: right;
+            min-width: 80px;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .delete-btn:active {
+            opacity: 0.8;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 24px;
+            font-size: 14px;
+        }
+
+        .reset-btn {
+            background: #ff6b6b;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            .card {
+                padding: 16px;
+                margin-bottom: 12px;
+            }
+            h1 {
+                font-size: 24px;
+                margin-bottom: 16px;
+            }
+            .expense-item {
+                flex-wrap: wrap;
+            }
+            .expense-amount {
+                flex-basis: 100%;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Trip Expenses</h1>
+
+        <div id="setupView" class="card">
+            <div class="input-group">
+                <label for="budgetInput">Total Budget</label>
+                <input type="number" id="budgetInput" placeholder="Enter your budget amount" step="0.01" min="0">
+            </div>
+            <button onclick="startTracking()">Start Tracking</button>
+        </div>
+
+        <div id="trackerView" class="hidden">
+            <div class="card">
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Budget</div>
+                        <div class="stat-value" id="budgetDisplay">$0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Spent</div>
+                        <div class="stat-value" id="spentDisplay">$0</div>
+                    </div>
+                    <div class="balance-box">
+                        <div class="stat-label">Remaining</div>
+                        <div class="stat-value" id="balanceDisplay">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="input-group">
+                    <label for="expenseDesc">What did you spend on?</label>
+                    <input type="text" id="expenseDesc" placeholder="e.g., Lunch, Hotel, Flight" maxlength="50">
+                </div>
+                <div class="input-group">
+                    <label for="expenseAmount">Amount</label>
+                    <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <button onclick="addExpense()">Add Expense</button>
+
+                <div class="expenses-list">
+                    <div id="expensesList"></div>
+                </div>
+
+                <button class="reset-btn" onclick="resetTracker()">Reset Budget</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+
+        function loadData() {
+            return JSON.parse(localStorage.getItem('tripBudget') || '{"budget": null, "expenses": []}');
+        }
+
+        function saveData(data) {
+            localStorage.setItem('tripBudget', JSON.stringify(data));
+        }
+
+        function startTracking() {
+            const budget = parseFloat(document.getElementById('budgetInput').value);
+            if (!budget || budget <= 0) {
+                alert('Please enter a valid budget');
+                return;
+            }
+            const data = { budget, expenses: [] };
+            saveData(data);
+            showTracker();
+        }
+
+        function showTracker() {
+            document.getElementById('setupView').classList.add('hidden');
+            document.getElementById('trackerView').classList.remove('hidden');
+            updateDisplay();
+        }
+
+        function addExpense() {
+            const desc = document.getElementById('expenseDesc').value.trim();
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            
+            if (!desc || !amount || amount <= 0) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const data = loadData();
+            data.expenses.push({ id: Date.now(), desc, amount });
+            saveData(data);
+            
+            document.getElementById('expenseDesc').value = '';
+            document.getElementById('expenseAmount').value = '';
+            updateDisplay();
+        }
+
+        function deleteExpense(id) {
+            const data = loadData();
+            data.expenses = data.expenses.filter(e => e.id !== id);
+            saveData(data);
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const data = loadData();
+            const { budget, expenses } = data;
+            
+            if (!budget) {
+                document.getElementById('setupView').classList.remove('hidden');
+                document.getElementById('trackerView').classList.add('hidden');
+                return;
+            }
+            
+            const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
+            const remaining = budget - spent;
+            
+            document.getElementById('budgetDisplay').textContent = `$${budget.toFixed(2)}`;
+            document.getElementById('spentDisplay').textContent = `$${spent.toFixed(2)}`;
+            document.getElementById('balanceDisplay').textContent = `$${remaining.toFixed(2)}`;
+            
+            const list = document.getElementById('expensesList');
+            if (expenses.length === 0) {
+                list.innerHTML = '<div class="empty-state">No expenses yet. Add one to get started!</div>';
+            } else {
+                list.innerHTML = expenses.map(e => `
+                    <div class="expense-item">
+                        <div class="expense-info">
+                            <div class="expense-desc">${e.desc}</div>
+                        </div>
+                        <div class="expense-amount">$${e.amount.toFixed(2)}</div>
+                        <button class="delete-btn" onclick="deleteExpense(${e.id})">Delete</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function resetTracker() {
+            if (confirm('Are you sure? This will clear everything.')) {
+                localStorage.removeItem('tripBudget');
+                document.getElementById('setupView').classList.remove('hidden');
+                document.getElementById('trackerView').classList.add('hidden');
+                document.getElementById('budgetInput').value = '';
+            }
+        }
+
+        // Load on start
+        updateDisplay();
+    </script>
+</body>
+</html>
