@@ -238,25 +238,36 @@
         .expense-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             padding: 12px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             margin-bottom: 8px;
+            gap: 8px;
+        }
+
+        .expense-info {
+            flex: 1;
         }
 
         .expense-desc {
             font-weight: 500;
             color: var(--text-primary);
             font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .expense-date {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
         .expense-amount {
             color: var(--accent);
             font-weight: 600;
             font-size: 14px;
-            margin: 0 12px;
+            white-space: nowrap;
         }
 
         .delete-btn {
@@ -353,6 +364,10 @@
                     <input type="text" id="expenseDesc" placeholder="e.g., Lunch" maxlength="50">
                 </div>
                 <div class="input-group">
+                    <label for="expenseDate">Date</label>
+                    <input type="date" id="expenseDate">
+                </div>
+                <div class="input-group">
                     <label for="expenseAmount">Amount (₹)</label>
                     <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0">
                 </div>
@@ -404,6 +419,12 @@
 
         function saveData(data) {
             localStorage.setItem('tripBudget', JSON.stringify(data));
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
         }
 
         function displayContributors() {
@@ -466,24 +487,27 @@
         function showTracker() {
             document.getElementById('setupView').classList.add('hidden');
             document.getElementById('trackerView').classList.remove('hidden');
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('expenseDate').value = today;
             updateDisplay();
         }
 
         function addExpense() {
             const desc = document.getElementById('expenseDesc').value.trim();
+            const date = document.getElementById('expenseDate').value;
             const amount = parseFloat(document.getElementById('expenseAmount').value);
             
-            if (!desc || !amount || amount <= 0) {
+            if (!desc || !date || !amount || amount <= 0) {
                 alert('Fill in all fields');
                 return;
             }
             
             const data = loadData();
-            data.expenses.push({ id: Date.now(), desc, amount });
+            data.expenses.push({ id: Date.now(), desc, date, amount });
             saveData(data);
             
             document.getElementById('expenseDesc').value = '';
-            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseAmount').value = new Date().toISOString().split('T')[0];
             updateDisplay();
         }
 
@@ -529,11 +553,15 @@
             if (expenses.length === 0) {
                 list.innerHTML = '<div class="empty-state">No expenses yet</div>';
             } else {
+                const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
                 let expHtml = '';
-                for (let e of expenses) {
+                for (let e of sortedExpenses) {
                     expHtml += `
                         <div class="expense-item">
-                            <div class="expense-desc">${e.desc}</div>
+                            <div class="expense-info">
+                                <div class="expense-desc">${e.desc}</div>
+                                <div class="expense-date">${formatDate(e.date)}</div>
+                            </div>
                             <div class="expense-amount">₹${e.amount.toFixed(2)}</div>
                             <button class="delete-btn" onclick="deleteExpense(${e.id})">Delete</button>
                         </div>
