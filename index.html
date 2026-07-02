@@ -123,6 +123,12 @@
             color: var(--accent);
         }
 
+        .stat-subtext {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
         .balance-box {
             grid-column: 1 / -1;
             background: var(--bg-primary);
@@ -145,7 +151,7 @@
             color: var(--text-primary);
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
@@ -157,7 +163,7 @@
             transition: border-color 0.2s;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--accent);
         }
@@ -193,6 +199,16 @@
 
         .hidden {
             display: none;
+        }
+
+        .currency-info {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
         }
 
         .contributor-item {
@@ -319,6 +335,16 @@
         </div>
 
         <div id="setupView" class="card">
+            <h2>Currency Setup</h2>
+            <div class="currency-info">
+                Budget Currency: <strong>USD</strong> | Expense Currency: <strong>INR</strong>
+            </div>
+
+            <div class="input-group">
+                <label for="exchangeRate">Exchange Rate (₹ per $)</label>
+                <input type="number" id="exchangeRate" placeholder="95.24" step="0.01" value="95.24" min="0">
+            </div>
+
             <h2>Add Contributors</h2>
             
             <div class="input-group">
@@ -326,7 +352,7 @@
                 <input type="text" id="contributorName" placeholder="e.g., John">
             </div>
             <div class="input-group">
-                <label for="contributorAmount">Amount (₹)</label>
+                <label for="contributorAmount">Budget (USD)</label>
                 <input type="number" id="contributorAmount" placeholder="0.00" step="0.01" min="0">
             </div>
             <button class="secondary-btn" onclick="addContributor()">Add</button>
@@ -342,20 +368,30 @@
                     <div class="stat-box">
                         <div class="stat-label">Budget</div>
                         <div class="stat-value" id="budgetDisplay">₹0</div>
+                        <div class="stat-subtext" id="budgetUsd">$0</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label">Spent</div>
                         <div class="stat-value" id="spentDisplay">₹0</div>
+                        <div class="stat-subtext" id="spentUsd">$0</div>
                     </div>
                     <div class="balance-box stat-box">
                         <div class="stat-label">Remaining</div>
                         <div class="stat-value" id="balanceDisplay">₹0</div>
+                        <div class="stat-subtext" id="balanceUsd">$0</div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>Contributors</h2>
+                <h2>Rate: ₹<span id="currentRate">95.24</span> / $</h2>
+                <div class="input-group">
+                    <label for="trackerExchangeRate">Update Exchange Rate</label>
+                    <input type="number" id="trackerExchangeRate" placeholder="95.24" step="0.01" min="0">
+                </div>
+                <button class="secondary-btn" onclick="updateExchangeRate()">Update</button>
+
+                <h2 style="margin-top: 24px;">Contributors</h2>
                 <div id="trackerContributorsList"></div>
 
                 <h2 style="margin-top: 24px;">Add Expense</h2>
@@ -412,7 +448,7 @@
         function loadData() {
             const stored = localStorage.getItem('tripBudget');
             if (!stored) {
-                return { contributors: [], expenses: [] };
+                return { contributors: [], expenses: [], exchangeRate: 95.24 };
             }
             return JSON.parse(stored);
         }
@@ -438,10 +474,11 @@
             } else {
                 let html = '';
                 for (let c of data.contributors) {
+                    const inr = (c.amount * data.exchangeRate).toFixed(2);
                     html += `
                         <div class="contributor-item">
                             <div class="contributor-name">${c.name}</div>
-                            <div class="contributor-amount">₹${c.amount.toFixed(2)}</div>
+                            <div class="contributor-amount">$${c.amount.toFixed(2)} / ₹${inr}</div>
                             <button class="remove-btn" onclick="removeContributor(${c.id})">Remove</button>
                         </div>
                     `;
@@ -460,6 +497,7 @@
             }
             
             const data = loadData();
+            data.exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 95.24;
             data.contributors.push({ id: Date.now(), name, amount });
             saveData(data);
             
@@ -481,14 +519,25 @@
                 alert('Add at least one contributor');
                 return;
             }
-            showTracker();
-        }
-
-        function showTracker() {
             document.getElementById('setupView').classList.add('hidden');
             document.getElementById('trackerView').classList.remove('hidden');
+            document.getElementById('trackerExchangeRate').value = data.exchangeRate;
+            document.getElementById('currentRate').textContent = data.exchangeRate.toFixed(2);
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('expenseDate').value = today;
+            updateDisplay();
+        }
+
+        function updateExchangeRate() {
+            const rate = parseFloat(document.getElementById('trackerExchangeRate').value);
+            if (!rate || rate <= 0) {
+                alert('Enter a valid exchange rate');
+                return;
+            }
+            const data = loadData();
+            data.exchangeRate = rate;
+            saveData(data);
+            document.getElementById('currentRate').textContent = rate.toFixed(2);
             updateDisplay();
         }
 
@@ -507,7 +556,7 @@
             saveData(data);
             
             document.getElementById('expenseDesc').value = '';
-            document.getElementById('expenseAmount').value = new Date().toISOString().split('T')[0];
+            document.getElementById('expenseAmount').value = '';
             updateDisplay();
         }
 
@@ -520,7 +569,7 @@
 
         function updateDisplay() {
             const data = loadData();
-            const { contributors, expenses } = data;
+            const { contributors, expenses, exchangeRate } = data;
             
             if (contributors.length === 0) {
                 document.getElementById('setupView').classList.remove('hidden');
@@ -529,21 +578,28 @@
                 return;
             }
             
-            const budget = contributors.reduce((sum, c) => sum + c.amount, 0);
-            const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
-            const remaining = budget - spent;
+            const budgetUsd = contributors.reduce((sum, c) => sum + c.amount, 0);
+            const budgetInr = budgetUsd * exchangeRate;
+            const spentInr = expenses.reduce((sum, e) => sum + e.amount, 0);
+            const spentUsd = spentInr / exchangeRate;
+            const remainingInr = budgetInr - spentInr;
+            const remainingUsd = remainingInr / exchangeRate;
             
-            document.getElementById('budgetDisplay').textContent = `₹${budget.toFixed(2)}`;
-            document.getElementById('spentDisplay').textContent = `₹${spent.toFixed(2)}`;
-            document.getElementById('balanceDisplay').textContent = `₹${remaining.toFixed(2)}`;
+            document.getElementById('budgetDisplay').textContent = `₹${budgetInr.toFixed(0)}`;
+            document.getElementById('budgetUsd').textContent = `$${budgetUsd.toFixed(2)}`;
+            document.getElementById('spentDisplay').textContent = `₹${spentInr.toFixed(0)}`;
+            document.getElementById('spentUsd').textContent = `$${spentUsd.toFixed(2)}`;
+            document.getElementById('balanceDisplay').textContent = `₹${remainingInr.toFixed(0)}`;
+            document.getElementById('balanceUsd').textContent = `$${remainingUsd.toFixed(2)}`;
             
             const trackerList = document.getElementById('trackerContributorsList');
             let html = '';
             for (let c of contributors) {
+                const inr = (c.amount * exchangeRate).toFixed(2);
                 html += `
                     <div class="contributor-item">
                         <div class="contributor-name">${c.name}</div>
-                        <div class="contributor-amount">₹${c.amount.toFixed(2)}</div>
+                        <div class="contributor-amount">$${c.amount.toFixed(2)} / ₹${inr}</div>
                     </div>
                 `;
             }
@@ -556,13 +612,14 @@
                 const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
                 let expHtml = '';
                 for (let e of sortedExpenses) {
+                    const usd = (e.amount / exchangeRate).toFixed(2);
                     expHtml += `
                         <div class="expense-item">
                             <div class="expense-info">
                                 <div class="expense-desc">${e.desc}</div>
                                 <div class="expense-date">${formatDate(e.date)}</div>
                             </div>
-                            <div class="expense-amount">₹${e.amount.toFixed(2)}</div>
+                            <div class="expense-amount">₹${e.amount.toFixed(0)} / $${usd}</div>
                             <button class="delete-btn" onclick="deleteExpense(${e.id})">Delete</button>
                         </div>
                     `;
@@ -578,6 +635,7 @@
                 document.getElementById('trackerView').classList.add('hidden');
                 document.getElementById('contributorName').value = '';
                 document.getElementById('contributorAmount').value = '';
+                document.getElementById('exchangeRate').value = '95.24';
                 displayContributors();
             }
         }
